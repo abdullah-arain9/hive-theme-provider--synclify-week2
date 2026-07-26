@@ -89,7 +89,7 @@ class forotpassword extends StatelessWidget {
                 {
                   Navigator.push(context, MaterialPageRoute(builder: (context) =>login(),));
                 },
-                child:Text("Forgot Password",style: TextStyle(color: Colors.white,fontSize: 16,fontWeight: .bold),),
+                child:Text("Reset Password",style: TextStyle(color: Colors.white,fontSize: 16,fontWeight: .bold),),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green.shade500,
                 ),

@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:hive/hive.dart';
 import 'package:synclifyinternship/color.dart';
 import 'package:synclifyinternship/helper/helpercode.dart';
 import 'package:synclifyinternship/week_1task/loginscreen.dart';
@@ -13,6 +14,12 @@ class signuppage extends StatefulWidget {
 }
 
 class _signuppageState extends State<signuppage> {
+  TextEditingController namecontroller=TextEditingController();
+  TextEditingController emailcontroller=TextEditingController();
+  TextEditingController passwordcontroller=TextEditingController();
+  TextEditingController confirmpasscontroller=TextEditingController();
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -56,6 +63,7 @@ class _signuppageState extends State<signuppage> {
                 boxShadow: [helper.shadow(AppColors.grey.withOpacity(0.3))]
               ),
               child: TextField(
+                controller: namecontroller,
                 decoration: InputDecoration(
                   filled: true,
                     fillColor: Colors.white,
@@ -89,6 +97,7 @@ class _signuppageState extends State<signuppage> {
                   boxShadow: [helper.shadow(AppColors.grey.withOpacity(0.3))]
               ),
               child: TextField(
+                controller: emailcontroller,
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: Colors.white,
@@ -121,6 +130,7 @@ class _signuppageState extends State<signuppage> {
                   boxShadow: [helper.shadow(AppColors.grey.withOpacity(0.3))]
               ),
               child: TextField(
+                controller: passwordcontroller,
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: Colors.white,
@@ -154,6 +164,7 @@ class _signuppageState extends State<signuppage> {
                   boxShadow: [helper.shadow(AppColors.grey.withOpacity(0.3))]
               ),
               child: TextField(
+                controller: confirmpasscontroller,
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: Colors.white,
@@ -189,9 +200,53 @@ class _signuppageState extends State<signuppage> {
                 boxShadow: [helper.shadow(Colors.green)]
               ),
               child: ElevatedButton(
-                  onPressed: ()
+                  onPressed: ()async
                   {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => login(),));
+                    var name=namecontroller.text;
+                    var email=emailcontroller.text;
+                    var pass=passwordcontroller.text.toString();
+                    var confirmpass=confirmpasscontroller.text.toString();
+
+
+                    if (name.isEmpty || email.isEmpty || pass.isEmpty || confirmpass.isEmpty) {
+                      snackbarforfields.errorbar(context, "Enter all the required fields");
+
+                    }
+
+                    if (pass != confirmpass) {
+
+                      snackbarforfields.errorbar(context, "Password do not match");
+                      return;
+                    }
+
+                    var signupbox=await Hive.openBox('signupdata');
+
+                    //making a list in hive to store multiple records to save records
+                    signupbox.put(email, {
+                      'name':name,
+                      'email':email,
+                      'password':pass,
+                      'confirmpassword':confirmpass,
+                    });
+
+                    // signupbox.put('name', name);
+                    // signupbox.put('email', email);
+                    // signupbox.put('password', pass);
+                    // signupbox.put('confirmpassword', confirmpass);
+                    // print(signupbox.get('name'));
+                    // print(signupbox.get('email'));
+                    // print(signupbox.get('password'));
+                    // print(signupbox.get('confirmpassword'));
+
+                    namecontroller.clear();
+                    emailcontroller.clear();
+                    passwordcontroller.clear();
+                    confirmpasscontroller.clear();
+
+                    if(name.isNotEmpty & email.isNotEmpty & pass.isNotEmpty & confirmpass.isNotEmpty && pass==confirmpass  )
+                    {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => login(),));
+                    }
                   },
                   child:Text("Craete Account",style: TextStyle(color: Colors.white,fontSize: 16,fontWeight: .bold),),
                 style: ElevatedButton.styleFrom(

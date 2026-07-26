@@ -1,9 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:hive/hive.dart';
 import 'package:synclifyinternship/color.dart';
 import 'package:synclifyinternship/week_1task/homepage.dart';
 import 'package:synclifyinternship/week_1task/signupscreen.dart';
+import 'package:synclifyinternship/week_2task/home.dart';
+import 'package:synclifyinternship/week_2task/usersession.dart';
 
 import '../helper/helpercode.dart';
 import 'forgotpass.dart';
@@ -22,6 +25,10 @@ class _loginState extends State<login> {
 
   @override
   Widget build(BuildContext context) {
+
+    TextEditingController loginname=TextEditingController();
+    TextEditingController loginpass=TextEditingController();
+
     return Scaffold(
       backgroundColor: AppColors.offWhite,
       body: Container(
@@ -36,7 +43,10 @@ class _loginState extends State<login> {
                 boxShadow: [helper.shadow(AppColors.grey)],
               ),
               child: IconButton(
-                onPressed: (){},
+                onPressed: ()
+                {
+                  Navigator.pop(context);
+                },
                 icon:FaIcon(FontAwesomeIcons.caretLeft,size: 30,),
               ),
             ),
@@ -62,6 +72,7 @@ class _loginState extends State<login> {
                   boxShadow: [helper.shadow(AppColors.grey.withOpacity(0.3))]
               ),
               child: TextField(
+                controller: loginname,
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: Colors.white,
@@ -78,7 +89,7 @@ class _loginState extends State<login> {
                       )
                   ),
                   border:.none,
-                  label: Text("Name"),
+                  label: Text("Email"),
                   prefixIcon: Padding(
                     padding: const EdgeInsets.only(left: 15,top: 10),
                     child: FaIcon(FontAwesomeIcons.userInjured),
@@ -95,6 +106,7 @@ class _loginState extends State<login> {
                   boxShadow: [helper.shadow(AppColors.grey.withOpacity(0.3))]
               ),
               child: TextField(
+                controller: loginpass,
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: Colors.white,
@@ -163,9 +175,50 @@ class _loginState extends State<login> {
                   boxShadow: [helper.shadow(Colors.green)]
               ),
               child: ElevatedButton(
-                onPressed: ()
+                onPressed: ()async
                 {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => homepage(),));
+                  var emaillog=loginname.text.toString();
+                  var passlog=loginpass.text.toString();
+
+                  //fields validation
+                  if(emaillog.isEmpty || passlog.isEmpty )
+                  {
+                    snackbarforfields.errorbar(context, "Enter all the required fields");
+                    return ;
+                  }
+                  //hive setup
+                  var loginbox=await Hive.openBox("signupdata");
+                  var storeemail=loginbox.get(emaillog);
+                  // //var storepass=loginbox.get("password");
+
+
+                  //email vaildation check if email is null on hive list which was given by user
+                  if(storeemail==null)
+                  {
+                    snackbarforfields.errorbar(context, "no account found on this email");
+                    return;
+                  }
+
+                  var storepass=storeemail['password'];
+
+                  if(storepass == passlog)
+                  {
+                    await usersession.setloogedin(true);
+                    await usersession.setcurrentuser(emaillog);
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => homee(),));
+                  }
+                  else
+                  {
+                    snackbarforfields.errorbar(context,  "Invalid email and password");
+                  }
+
+                  // print("Enteredd: $emaillog | $passlog");
+                  // print("Stored: $storeemail | $storepass");
+                  //
+                  // print("Total users: ${loginbox.length}");
+                  // print("All emails: ${loginbox.keys}");
+
+                  
                 },
                 child:Text("Login",style: TextStyle(color: Colors.white,fontSize: 16,fontWeight: .bold),),
                 style: ElevatedButton.styleFrom(
